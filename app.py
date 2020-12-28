@@ -1,4 +1,7 @@
 from flask import Flask, render_template, request
+import json
+from data import goals
+from days import days
 
 app = Flask(__name__)
 
@@ -20,7 +23,13 @@ def render_goal(goal):
 
 @app.route('/profiles/<id>/')
 def render_teacher(id):
-    return "здесь будет преподаватель "+id
+    with open("data.json", "r", encoding='utf-8') as f:
+        teachers_list = json.load(f)
+    teacher = teachers_list[0]
+    for temp in teachers_list:
+        if temp["id"] == int(id):
+            teacher = temp
+    return render_template('profile.html', teacher=teacher, goals=goals, days=days)
 
 
 @app.route('/request/')
