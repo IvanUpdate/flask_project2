@@ -1,8 +1,11 @@
-from flask import Flask, render_template, request
-from random import sample
 import json
+from random import sample
+
+from flask import Flask, render_template, request
+
 from data import goals
 from days import days
+
 
 app = Flask(__name__)
 
@@ -11,7 +14,7 @@ app = Flask(__name__)
 def render_main():
     with open("data.json", "r", encoding='utf-8') as f:
         teachers_list = json.load(f)
-    return render_template('index.html', teachers=sample(teachers_list, 6), goals = goals)
+    return render_template('index.html', teachers=sample(teachers_list, 6), goals=goals)
 
 
 @app.route('/all/')
@@ -36,10 +39,12 @@ def render_goal(goal):
 def render_teacher(id):
     with open("data.json", "r", encoding='utf-8') as f:
         teachers_list = json.load(f)
-    teacher = teachers_list[0]
+    teacher = None
     for temp in teachers_list:
         if temp["id"] == int(id):
             teacher = temp
+    if teacher is None:
+        return "Что-то не так, но мы все починим:\n{}".format(404)
     return render_template('profile.html', teacher=teacher, goals=goals, days=days)
 
 
@@ -55,8 +60,11 @@ def render_request_done():
     client_name = request.form.get("clientName")
     client_phone = request.form.get("clientPhone")
     temp_dict = {"goal": goal, "client_time": time, "client_name": client_name, "client_phone": client_phone}
-    with open("request.json", "a") as r:
-        json.dump(temp_dict, r)
+    with open("request.json", "r") as r:
+        contents = r.read()
+    contents += json.dumps(temp_dict)
+    with open("request.json", "w", encoding='utf-8') as f:
+        f.write(contents)
     return render_template('request_done.html', goal=goal, client_name=client_name, time=time, client_phone=client_phone, goals=goals)
 
 
